@@ -1,4 +1,4 @@
-# BASE DE DATPS I - Proyecto De Estudio - Triggers
+# BASE DE DATOS I - Proyecto De Estudio - Triggers
 
 Esta investigación proporciona una comprensión en profundidad de los triggers en bases de datos y su importancia en la gestión de
 datos. Los triggers son conjuntos de sentencias SQL que se ejecutan automáticamente en respuesta a eventos específicos, como
