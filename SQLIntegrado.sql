@@ -136,7 +136,7 @@ BEGIN CATCH
 END CATCH
 END
 
--- Procedimiento para Eliminar consorcio
+--Procedimiento para eliminar consorcio 
 USE [base_consorcio]
 GO
 
@@ -172,8 +172,7 @@ BEGIN CATCH
 END CATCH
 END
 
--- Procedmiento para Eliminar gasto
-
+--Procedimiento para Eliminar gasto 
 USE [base_consorcio]
 GO
 
@@ -208,8 +207,108 @@ END CATCH
 END
 
 
+
+
+
+--Creación de Procedimiento para insertar administrador
+DROP PROCEDURE IF EXISTS [InsertarAdministrador]
+GO
+
+CREATE PROCEDURE [InsertarAdministrador] (
+	@apeynom varchar(50) = null,
+	@viveahi varchar(1) = null,
+	@tel varchar(20) = null,
+	@sexo varchar(1) = null,
+	@fechnac datetime  = null,
+	@exito bit OUT,
+	@error varchar(200) OUT
+)
+AS 
+BEGIN
+SET @exito = 1
+BEGIN TRY
+	BEGIN TRAN
+	INSERT INTO administrador (apeynom, viveahi, tel, sexo, fechnac) 
+	VALUES (@apeynom, @viveahi, @tel, @sexo, @fechnac)
+	COMMIT TRAN
+END TRY
+BEGIN CATCH
+	SET @error = CASE
+					WHEN ERROR_MESSAGE() LIKE '%CK_habitante_viveahi%' THEN 'Valor incorrecto para el campo viveahi. Los valores posibles son S y N.'
+					ELSE ERROR_MESSAGE()
+					END
+	ROLLBACK TRAN;
+	SET @exito = 0
+END CATCH
+END
+
+--Creación de Procedimiento para insertar consorcio
+DROP PROCEDURE IF EXISTS [InsertarConsorcio]
+GO
+
+CREATE PROCEDURE [InsertarConsorcio] (
+	@idprovincia int = null,
+	@idlocalidad int = null,
+	@idconsorcio int = null,
+	@nombre varchar(50) = null,
+	@direccion varchar(250)  = null,
+	@idzona int = null,
+	@idconserje int = null,
+	@idadmin int = null,
+	@exito bit OUT,
+	@error varchar(200) OUT
+)
+AS 
+BEGIN
+SET @exito = 1
+BEGIN TRY
+	BEGIN TRAN
+	INSERT INTO consorcio (idprovincia, idlocalidad, idconsorcio, nombre, direccion, idzona, idconserje, idadmin)
+	VALUES (@idprovincia, @idlocalidad, @idconsorcio, @nombre, @direccion, @idzona, @idconserje, @idadmin)
+	COMMIT TRAN
+END TRY
+BEGIN CATCH
+	SET @error = ERROR_MESSAGE()
+	ROLLBACK TRAN;
+	SET @exito = 0
+END CATCH
+END
+
+
+--Creación de Procedimiento para insertar gasto
+DROP PROCEDURE IF EXISTS [InsertarGasto]
+GO
+
+CREATE PROCEDURE [InsertarGasto] (
+	@idprovincia int = null,
+	@idlocalidad int = null,
+	@idconsorcio int = null,
+	@periodo int = null,
+	@fechapago datetime  = null,
+	@idtipogasto int = null,
+	@importe decimal(8,2) = null,
+	@exito bit OUT,
+	@error varchar(200) OUT
+)
+AS 
+BEGIN
+SET @exito = 1
+BEGIN TRY
+	BEGIN TRAN
+	INSERT INTO gasto (idprovincia, idlocalidad, idconsorcio, periodo, fechapago, idtipogasto, importe)
+	VALUES (@idprovincia, @idlocalidad, @idconsorcio, @periodo, @fechapago, @idtipogasto, @importe)
+	COMMIT TRAN
+END TRY
+BEGIN CATCH
+	SET @error = ERROR_MESSAGE()
+	ROLLBACK TRAN;
+	SET @exito = 0
+END CATCH
+END
+
+
 /*
-Creación de tablas auxiliares de auditoría y creación de TRIGGERS
+CREACIÓN DE TABLAS AUXILIARES DE AUDITORÍA Y CREACIÓN DE TRIGGERS
 */
 
 --Creación de la tabla auditoriaConsorcio
