@@ -46,6 +46,30 @@ BEGIN CATCH
 END CATCH
 END
 
+-- Procedimiento para cambiar importe de gastos
+
+CREATE PROCEDURE [CambiarImporteGasto] (
+	@idgasto int = null,
+	@importe decimal(8,2) = null,
+	@exito bit OUT,
+	@error varchar(200) OUT
+)
+AS 
+BEGIN
+SET @exito = 1
+BEGIN TRY
+	BEGIN TRAN
+	UPDATE gasto
+	SET importe=@importe
+	WHERE idgasto=@idgasto
+	COMMIT TRAN
+END TRY
+BEGIN CATCH
+	SET @error = ERROR_MESSAGE()
+	ROLLBACK TRAN;
+	SET @exito = 0
+END CATCH
+END
 
 --Creación de Procedimiento para cambiar residencia del administrador
 DROP PROCEDURE IF EXISTS [CambiarResidenciaAdministrador]
@@ -76,6 +100,113 @@ BEGIN CATCH
 	SET @exito = 0
 END CATCH
 END
+
+-- Procedimiento para Eliminar Administrador
+
+USE [base_consorcio]
+GO
+
+DROP PROCEDURE IF EXISTS [EliminarAdministrador]
+GO
+
+CREATE PROCEDURE [EliminarAdministrador] (
+	@idadmin int = null,
+	@exito bit OUT,
+	@error varchar(200) OUT
+)
+AS 
+BEGIN
+SET @exito = 1
+BEGIN TRY
+	IF NOT EXISTS (SELECT * FROM administrador WHERE idadmin=@idadmin)
+	BEGIN
+		SET @exito = 0
+		SET @error = 'Administrador inexistente'
+		RETURN
+	END
+	BEGIN TRAN
+	DELETE FROM administrador
+	WHERE idadmin=@idadmin
+	COMMIT TRAN
+END TRY
+BEGIN CATCH
+	ROLLBACK TRAN;
+	SET @error = ERROR_MESSAGE()
+	SET @exito = 0
+END CATCH
+END
+
+-- Procedimiento para Eliminar consorcio
+USE [base_consorcio]
+GO
+
+DROP PROCEDURE IF EXISTS [EliminarConsorcio]
+GO
+
+CREATE PROCEDURE [EliminarConsorcio] (
+	@idprovincia int = null,
+	@idlocalidad int = null,
+	@idconsorcio int = null,
+	@exito bit OUT,
+	@error varchar(200) OUT
+)
+AS 
+BEGIN
+SET @exito = 1
+BEGIN TRY
+	IF NOT EXISTS (SELECT * FROM consorcio WHERE idprovincia=@idprovincia and idlocalidad=@idlocalidad and idconsorcio=@idconsorcio)
+	BEGIN
+		SET @exito = 0
+		SET @error = 'Consorcio inexistente'
+		RETURN
+	END
+	BEGIN TRAN
+	DELETE FROM consorcio
+	WHERE idprovincia=@idprovincia and idlocalidad=@idlocalidad and idconsorcio=@idconsorcio
+	COMMIT TRAN
+END TRY
+BEGIN CATCH
+	ROLLBACK TRAN;
+	SET @error = ERROR_MESSAGE()
+	SET @exito = 0
+END CATCH
+END
+
+-- Procedmiento para Eliminar gasto
+
+USE [base_consorcio]
+GO
+
+DROP PROCEDURE IF EXISTS [EliminarGasto]
+GO
+
+CREATE PROCEDURE [EliminarGasto] (
+	@idgasto int = null,
+	@exito bit OUT,
+	@error varchar(200) OUT
+)
+AS 
+BEGIN
+SET @exito = 1
+BEGIN TRY
+	IF NOT EXISTS (SELECT * FROM gasto WHERE idgasto=@idgasto)
+	BEGIN
+		SET @exito = 0
+		SET @error = 'Gasto inexistente'
+		RETURN
+	END
+	BEGIN TRAN
+	DELETE FROM gasto
+	WHERE idgasto=@idgasto
+	COMMIT TRAN
+END TRY
+BEGIN CATCH
+	ROLLBACK TRAN;
+	SET @error = ERROR_MESSAGE()
+	SET @exito = 0
+END CATCH
+END
+
 
 /*
 Creación de tablas auxiliares de auditoría y creación de TRIGGERS
@@ -211,27 +342,3 @@ GO
 DROP PROCEDURE IF EXISTS [CambiarImporteGasto]
 GO
 
--- Procedimiento para cambiar importe de gastos
-
-CREATE PROCEDURE [CambiarImporteGasto] (
-	@idgasto int = null,
-	@importe decimal(8,2) = null,
-	@exito bit OUT,
-	@error varchar(200) OUT
-)
-AS 
-BEGIN
-SET @exito = 1
-BEGIN TRY
-	BEGIN TRAN
-	UPDATE gasto
-	SET importe=@importe
-	WHERE idgasto=@idgasto
-	COMMIT TRAN
-END TRY
-BEGIN CATCH
-	SET @error = ERROR_MESSAGE()
-	ROLLBACK TRAN;
-	SET @exito = 0
-END CATCH
-END
