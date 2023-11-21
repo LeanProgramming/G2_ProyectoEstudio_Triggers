@@ -252,3 +252,151 @@ select * from consorcio where idprovincia = 7  and idconsorcio = 2 --No existe e
 select * from gasto where idprovincia = 7 and idconsorcio = 2
 
 
+/*
+PRUEBAS PARA INDICES COLUMNARES
+*/
+
+
+-- Declarar variables de tiempo
+DECLARE @StartTime DATETIME;
+DECLARE @EndTime DATETIME;
+DECLARE @ValorSinColumnstore BIGINT;
+DECLARE @ValorConColumnstore BIGINT;
+
+--TEST 1 SOBRE FUNCION SUM()
+
+-- PARTE 1: TABLA GASTO
+-- Ejecutar una consulta para comparar el rendimiento de ambas tablas
+-- Tiempo de inicio
+ 
+SET @StartTime = GETDATE();
+-- Consulta en la tabla sin índice de Columnstore
+SELECT @ValorSinColumnstore = SUM(importe) FROM gasto;
+-- Tiempo de finalización
+SET @EndTime = GETDATE();
+-- Calcular el tiempo transcurrido
+SELECT 'TEST 1) SUM(importe) sin columnstore' AS Tabla, @ValorSinColumnstore AS Cantidad, DATEDIFF(MILLISECOND, @StartTime, @EndTime) AS TiempoTranscurrido;
+
+
+--PARTE 2: TABLA GASTONEW
+-- Tiempo de inicio
+SET @StartTime = GETDATE();
+-- Consulta en la tabla con índice de Columnstore
+SELECT @ValorConColumnstore = SUM(importe) FROM gastonew ;
+-- Tiempo de finalización
+SET @EndTime = GETDATE();
+-- Calcular el tiempo transcurrido
+SELECT 'TEST 1) SUM(importe) con columnstore' AS Tabla, @ValorConColumnstore AS Cantidad, DATEDIFF(MILLISECOND, @StartTime, @EndTime) AS TiempoTranscurrido;
+
+------------------------------------------------------------------------------------------
+--TEST 2: FUNCION AVG()
+
+--PARTE 1: TABLA GASTO
+
+-- Tiempo de inicio
+SET @StartTime = GETDATE();
+-- Consulta en la tabla sin índice de Columnstore
+SELECT @ValorSinColumnstore = AVG(importe) FROM gasto;
+-- Tiempo de finalización
+SET @EndTime = GETDATE();
+-- Calcular el tiempo transcurrido
+SELECT 'TEST 2) AVG(importe) sin columnstore' AS Tabla, @ValorSinColumnstore AS Cantidad, DATEDIFF(MILLISECOND, @StartTime, @EndTime) AS TiempoTranscurrido;
+
+
+--PARTE 2: TABLA GASTONEW
+ 
+-- Tiempo de inicio
+SET @StartTime = GETDATE();
+-- Consulta en la tabla con índice de Columnstore
+SELECT @ValorConColumnstore = AVG(importe) FROM gastonew;
+-- Tiempo de finalización
+SET @EndTime = GETDATE();
+-- Calcular el tiempo transcurrido
+SELECT 'TEST 2) AVG(importe) con columnstore' AS Tabla, @ValorConColumnstore AS Cantidad, DATEDIFF(MILLISECOND, @StartTime, @EndTime) AS TiempoTranscurrido;
+
+------------------------------------------------------------------------------------------
+--TEST 3: FUNCION COUNT()
+
+--PARTE 1: TABLA GASTO
+
+-- Tiempo de inicio
+SET @StartTime = GETDATE();
+-- Consulta en la tabla sin índice de Columnstore
+SELECT @ValorSinColumnstore = COUNT(*) FROM gasto WHERE idconsorcio <= 250;
+-- Tiempo de finalización
+SET @EndTime = GETDATE();
+-- Calcular el tiempo transcurrido
+SELECT 'TEST 3) COUNT(*) sin columnstore' AS Tabla, @ValorSinColumnstore AS Cantidad, DATEDIFF(MILLISECOND, @StartTime, @EndTime) AS TiempoTranscurrido;
+
+
+--PARTE 2: TABLA GASTONEW
+ 
+-- Tiempo de inicio
+SET @StartTime = GETDATE();
+-- Consulta en la tabla con índice de Columnstore
+SELECT @ValorConColumnstore = COUNT(*) FROM gastonew WHERE idconsorcio <= 250;
+-- Tiempo de finalización
+SET @EndTime = GETDATE();
+-- Calcular el tiempo transcurrido
+SELECT 'TEST 3) COUNT(*) con columnstore' AS Tabla, @ValorConColumnstore AS Cantidad, DATEDIFF(MILLISECOND, @StartTime, @EndTime) AS TiempoTranscurrido;
+
+------------------------------------------------------------------------------------------
+--TEST 4: CONSULTA CON SELECT
+
+--PARTE 1: TABLA GASTO
+ 
+-- Tiempo de inicio
+SET @StartTime = GETDATE();
+-- Consulta en la tabla sin índice de Columnstore
+SELECT *
+FROM gasto
+WHERE idconsorcio <= 250
+-- Tiempo de finalización
+SET @EndTime = GETDATE();
+-- Calcular el tiempo transcurrido
+SELECT 'TEST 4) SELECT sin columnstore' AS Tabla,  DATEDIFF(MILLISECOND, @StartTime, @EndTime) AS TiempoTranscurrido;
+
+--PARTE 2: TABLA GASTONEW
+
+-- Tiempo de inicio
+SET @StartTime = GETDATE();
+-- Consulta en la tabla con índice de Columnstore 
+SELECT *
+FROM gastonew
+WHERE idconsorcio <= 250
+-- Tiempo de finalización
+SET @EndTime = GETDATE();
+-- Calcular el tiempo transcurrido
+SELECT 'TEST 4) SELECT con columnstore' AS Tabla,  DATEDIFF(MILLISECOND, @StartTime, @EndTime) AS TiempoTranscurrido;
+
+ ------------------------------------------------------------------------------------------
+
+--TEST 5: USO DE COMBINACIONES JOIN
+
+--PARTE 1: TABLA GASTO
+ 
+-- Tiempo de inicio
+SET @StartTime = GETDATE();
+-- Consulta en la tabla sin índice de Columnstore
+SELECT gn.* , pro.*
+FROM gasto as gn
+join provincia as pro on gn.idprovincia = pro.idprovincia
+WHERE idconsorcio <= 250 and pro.idprovincia = 1
+-- Tiempo de finalización
+SET @EndTime = GETDATE();
+-- Calcular el tiempo transcurrido
+SELECT 'TEST 5) SELECT/JOIN sin columnstore' AS Tabla,  DATEDIFF(MILLISECOND, @StartTime, @EndTime) AS TiempoTranscurrido;
+
+--PARTE 2: TABLA GASTONEW
+ 
+-- Tiempo de inicio
+SET @StartTime = GETDATE();
+-- Consulta en la tabla con índice de Columnstore 
+SELECT gn.* , pro.*
+FROM gastonew as gn
+join provincia as pro on gn.idprovincia = pro.idprovincia
+WHERE idconsorcio <= 250 and pro.idprovincia = 1
+-- Tiempo de finalización
+SET @EndTime = GETDATE();
+-- Calcular el tiempo transcurrido
+SELECT 'TEST 5) SELECT/JOIN con columnstore' AS Tabla,  DATEDIFF(MILLISECOND, @StartTime, @EndTime) AS TiempoTranscurrido;
