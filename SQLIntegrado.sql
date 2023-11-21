@@ -47,6 +47,8 @@ END CATCH
 END
 
 -- Procedimiento para cambiar importe de gastos
+DROP PROCEDURE IF EXISTS [CambiarImporteGasto]
+GO
 
 CREATE PROCEDURE [CambiarImporteGasto] (
 	@idgasto int = null,
@@ -103,9 +105,6 @@ END
 
 -- Procedimiento para Eliminar Administrador
 
-USE [base_consorcio]
-GO
-
 DROP PROCEDURE IF EXISTS [EliminarAdministrador]
 GO
 
@@ -137,9 +136,6 @@ END CATCH
 END
 
 --Procedimiento para eliminar consorcio 
-USE [base_consorcio]
-GO
-
 DROP PROCEDURE IF EXISTS [EliminarConsorcio]
 GO
 
@@ -173,9 +169,6 @@ END CATCH
 END
 
 --Procedimiento para Eliminar gasto 
-USE [base_consorcio]
-GO
-
 DROP PROCEDURE IF EXISTS [EliminarGasto]
 GO
 
@@ -205,10 +198,6 @@ BEGIN CATCH
 	SET @exito = 0
 END CATCH
 END
-
-
-
-
 
 --Creación de Procedimiento para insertar administrador
 DROP PROCEDURE IF EXISTS [InsertarAdministrador]
@@ -433,11 +422,5 @@ BEGIN
     RAISERROR('La eliminación de registros en la tabla Administrador no está permitida.', 16, 1);
     ROLLBACK;
 END
-GO
-
-USE [base_consorcio]
-GO
-
-DROP PROCEDURE IF EXISTS [CambiarImporteGasto]
 GO
 
