@@ -1,9 +1,9 @@
-/*
-CREACI”N DE PROCEDIMIENTOS Y FUNCIONES ALMACENADAS
+Ôªø/*
+CREACI√ìN DE PROCEDIMIENTOS Y FUNCIONES ALMACENADAS
 */
 
 
---CreaciÛn de FunciÛn definida por el usuario para c·lculo de edad
+--Creaci√≥n de Funci√≥n definida por el usuario para c√°lculo de edad
 DROP FUNCTION IF EXISTS [CalcularEdad]
 GO
 
@@ -17,7 +17,7 @@ BEGIN
 END
 
 
---CreaciÛn de Procedimiento para cambiar la direcciÛn de un consorcio
+--Creaci√≥n de Procedimiento para cambiar la direcci√≥n de un consorcio
 DROP PROCEDURE IF EXISTS [CambiarDireccionConsorcio]
 GO
 
@@ -73,7 +73,7 @@ BEGIN CATCH
 END CATCH
 END
 
---CreaciÛn de Procedimiento para cambiar residencia del administrador
+--Creaci√≥n de Procedimiento para cambiar residencia del administrador
 DROP PROCEDURE IF EXISTS [CambiarResidenciaAdministrador]
 GO
 
@@ -199,7 +199,7 @@ BEGIN CATCH
 END CATCH
 END
 
---CreaciÛn de Procedimiento para insertar administrador
+--Creaci√≥n de Procedimiento para insertar administrador
 DROP PROCEDURE IF EXISTS [InsertarAdministrador]
 GO
 
@@ -231,7 +231,7 @@ BEGIN CATCH
 END CATCH
 END
 
---CreaciÛn de Procedimiento para insertar consorcio
+--Creaci√≥n de Procedimiento para insertar consorcio
 DROP PROCEDURE IF EXISTS [InsertarConsorcio]
 GO
 
@@ -264,7 +264,7 @@ END CATCH
 END
 
 
---CreaciÛn de Procedimiento para insertar gasto
+--Creaci√≥n de Procedimiento para insertar gasto
 DROP PROCEDURE IF EXISTS [InsertarGasto]
 GO
 
@@ -297,10 +297,10 @@ END
 
 
 /*
-CREACI”N DE TABLAS AUXILIARES DE AUDITORÕA Y CREACI”N DE TRIGGERS
+CREACI√ìN DE TABLAS AUXILIARES DE AUDITOR√çA Y CREACI√ìN DE TRIGGERS
 */
 
---CreaciÛn de la tabla auditoriaConsorcio
+--Creaci√≥n de la tabla auditoriaConsorcio
 CREATE TABLE auditoriaConsorcio
 (idprovincia       int, 
  idlocalidad       int, 
@@ -316,33 +316,33 @@ CREATE TABLE auditoriaConsorcio
 );
 GO
 
---Trigger para la operaciÛn de UPDATE en la tabla consorcio
+--Trigger para la operaci√≥n de UPDATE en la tabla consorcio
 CREATE TRIGGER trg_auditConsorcio_update
 ON consorcio
 AFTER UPDATE
 AS
 BEGIN
-        -- Registrar los valores antes de la modificaciÛn en una tabla auxiliar
+        -- Registrar los valores antes de la modificaci√≥n en una tabla auxiliar
         INSERT INTO auditoriaConsorcio
         SELECT * , GETDATE(), SUSER_NAME(), 'Update'
         FROM deleted;
 END;
 GO
 
---Trigger para la operaciÛn de DELETE en la tabla consorcio
+--Trigger para la operaci√≥n de DELETE en la tabla consorcio
 CREATE TRIGGER trg_auditConsorcio_delete
 ON consorcio
 AFTER DELETE
 AS
 BEGIN
-        -- Registrar los valores antes de la eliminaciÛn en una tabla auxiliar
+        -- Registrar los valores antes de la eliminaci√≥n en una tabla auxiliar
         INSERT INTO auditoriaConsorcio
         SELECT * , GETDATE(), SUSER_NAME(), 'Delete'
         FROM deleted;
 END;
 GO
 
---CreaciÛn de la tabla auditoriaGasto
+--Creaci√≥n de la tabla auditoriaGasto
 CREATE TABLE auditoriaGasto
 (idgasto                INT, 
  idprovincia			INT, 
@@ -358,13 +358,13 @@ CREATE TABLE auditoriaGasto
 );
 GO
 
---Trigger para la operaciÛn de UPDATE en la tabla gasto
+--Trigger para la operaci√≥n de UPDATE en la tabla gasto
 CREATE TRIGGER trg_auditGasto_update
 ON gasto
 AFTER UPDATE
 AS
 BEGIN
-        -- Registrar los valores antes de la modificaciÛn en una tabla auxiliar
+        -- Registrar los valores antes de la modificaci√≥n en una tabla auxiliar
         INSERT INTO auditoriaGasto
         SELECT  * , GETDATE(), SUSER_NAME(), 'Update'
         FROM deleted;
@@ -372,20 +372,20 @@ END;
 GO
 
 
---Trigger para la operaciÛn de DELETE en la tabla gasto
+--Trigger para la operaci√≥n de DELETE en la tabla gasto
 CREATE TRIGGER trg_auditGasto_delete
 ON gasto
 AFTER DELETE
 AS
 BEGIN
-    -- Registrar los valores antes de la eliminaciÛn en una tabla auxiliar
+    -- Registrar los valores antes de la eliminaci√≥n en una tabla auxiliar
     INSERT INTO auditoriaGasto
     SELECT * , GETDATE(),SUSER_NAME(), 'Delete'
     FROM deleted;
 END
 GO
 
---CreaciÛn de la tabla auditoriaAdministrador
+--Creaci√≥n de la tabla auditoriaAdministrador
 CREATE TABLE auditoriaAdministrador
 (idadmin                INT, 
  apeynom				VARCHAR(50), 
@@ -399,28 +399,137 @@ CREATE TABLE auditoriaAdministrador
 );
 GO
 
---Trigger para la operaciÛn de UPDATE en la tabla administraciÛn
+--Trigger para la operaci√≥n de UPDATE en la tabla administraci√≥n
 CREATE TRIGGER trg_auditAdmin_update
 ON administrador
 AFTER UPDATE
 AS
 BEGIN
-        -- Registrar los valores antes de la modificaciÛn en una tabla auxiliar
+        -- Registrar los valores antes de la modificaci√≥n en una tabla auxiliar
         INSERT INTO auditoriaAdministrador
         SELECT  * , GETDATE(), SUSER_NAME(), 'Update'
         FROM deleted;
 END;
 GO
 
---Trigger para la operaciÛn de DELETE en la tabla administraciÛn
+--Trigger para la operaci√≥n de DELETE en la tabla administraci√≥n
 CREATE TRIGGER trg_auditAdmin_delete
 ON administrador
 AFTER DELETE
 AS
 BEGIN
-    -- Emite un mensaje y prevenir la operaciÛn de eliminaciÛn
-    RAISERROR('La eliminaciÛn de registros en la tabla Administrador no est· permitida.', 16, 1);
+    -- Emite un mensaje y prevenir la operaci√≥n de eliminaci√≥n
+    RAISERROR('La eliminaci√≥n de registros en la tabla Administrador no est√° permitida.', 16, 1);
     ROLLBACK;
 END
+GO
+
+/*
+INDICES COLUMNARES
+*/
+
+
+/*
+En el siguiente script se crea una tabla gastonew apartir de la tabla gasto para poder comparar
+los tiempos de ejecucion de consultas entre una tabla indexada de manera columnar y otra que no.
+*/
+
+-- Se crea la tabla solicitada apartir de la tabla GASTO
+CREATE TABLE [dbo].[gastonew](
+    [idgasto] [int] IDENTITY(1,1) NOT NULL,
+    [idprovincia] [int] NULL,
+    [idlocalidad] [int] NULL,
+    [idconsorcio] [int] NULL,
+    [periodo] [int] NULL,
+    [fechapago] [datetime] NULL,
+    [idtipogasto] [int] NULL,
+    [importe] [decimal](8, 2) NULL,
+    CONSTRAINT [PK_gastonew] PRIMARY KEY CLUSTERED ([idgasto] ASC),
+    CONSTRAINT [FK_gasto_consorcio_new] FOREIGN KEY ([idprovincia], [idlocalidad], [idconsorcio])
+    REFERENCES [dbo].[consorcio] ([idprovincia], [idlocalidad], [idconsorcio]),
+    CONSTRAINT [FK_gasto_tipo_new] FOREIGN KEY ([idtipogasto])
+    REFERENCES [dbo].[tipogasto] ([idtipogasto])
+);
+
+
+/*
+Se agrega el nonclustered columnstore index a todas las columnas de la tabla gastonew.
+*/
+
+-- Crear un ÔøΩndice columnar no agrupado 
+CREATE NONCLUSTERED COLUMNSTORE INDEX IX_GASTONEW_Columnar
+ON dbo.GASTONEW
+(
+    idprovincia,
+    idlocalidad,
+    idconsorcio,
+    periodo,
+    fechapago,
+    idtipogasto,
+    importe
+);
+
+
+/*
+Luego se agrega un millon de registros en ambas tablas para poder comparar tiempos de ejecucion.
+*/
+
+
+-- Se inserta 1.000.000 de registros a la tabla GASTONEW
+
+-- Deshabilita las restricciones de clave externa para un mejor rendimiento
+ALTER TABLE dbo.gastonew NOCHECK CONSTRAINT ALL;
+
+DECLARE @counter INT = 1;
+
+WHILE @counter <= 1000000
+BEGIN
+    INSERT INTO dbo.gastonew (idprovincia, idlocalidad, idconsorcio, periodo, fechapago, idtipogasto, importe)
+    VALUES (
+        -- Valores aleatorios para cada columna
+        CAST((RAND() * (5-1) + 1) AS INT), -- idprovincia (aleatorio entre 1 y 5)
+        CAST((RAND() * (5-1) + 1) AS INT), -- idlocalidad (aleatorio entre 1 y 5)
+        CAST((RAND() * (40-1) + 1) AS INT), -- idconsorcio (aleatorio entre 1 y 40)
+        CAST((RAND() * (9-1) + 1) AS INT), -- periodo (aleatorio entre 1 y 9)
+        GETDATE(), -- fechapago (fecha y hora actual)
+        CAST((RAND() * (5-1) + 1) AS INT), -- idtipogasto (aleatorio entre 1 y 5)
+        CAST((RAND() * (400000-55000) + 55000) AS DECIMAL(8,2)) -- importe (aleatorio entre 50000 y 300000)
+    );
+    
+    SET @counter = @counter + 1;
+END;
+
+-- Vuelve a habilitar las restricciones de clave externa
+ALTER TABLE dbo.gastonew CHECK CONSTRAINT ALL;
+GO
+
+
+
+-- Se completa a 1.000.000 de registros a la tabla GASTO
+
+-- Deshabilita las restricciones de clave externa para un mejor rendimiento
+ALTER TABLE dbo.gasto NOCHECK CONSTRAINT ALL;
+
+DECLARE @counter INT = 1;
+
+WHILE @counter <= 992000
+BEGIN
+    INSERT INTO dbo.gasto (idprovincia, idlocalidad, idconsorcio, periodo, fechapago, idtipogasto, importe)
+    VALUES (
+        -- Valores aleatorios para cada columna
+        CAST((RAND() * (5-1) + 1) AS INT), -- idprovincia (aleatorio entre 1 y 5)
+        CAST((RAND() * (5-1) + 1) AS INT), -- idlocalidad (aleatorio entre 1 y 5)
+        CAST((RAND() * (40-1) + 1) AS INT), -- idconsorcio (aleatorio entre 1 y 400)
+        CAST((RAND() * (9-1) + 1) AS INT), -- periodo (aleatorio entre 1 y 9)
+        GETDATE(), -- fechapago (fecha y hora actual)
+        CAST((RAND() * (5-1) + 1) AS INT), -- idtipogasto (aleatorio entre 1 y 5)
+        CAST((RAND() * (400000-55000) + 55000) AS DECIMAL(8,2)) -- importe (aleatorio entre 50000 y 300000)
+    );
+    
+    SET @counter = @counter + 1;
+END;
+
+-- Vuelve a habilitar las restricciones de clave externa
+ALTER TABLE dbo.gasto CHECK CONSTRAINT ALL;
 GO
 
