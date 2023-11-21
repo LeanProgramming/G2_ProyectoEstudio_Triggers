@@ -1,5 +1,5 @@
 ﻿/*
-CREACIÓN DE PROCEDIMIENTOS Y FUNCIONES ALMACENADAS
+-------------------------------------------CREACIÓN DE PROCEDIMIENTOS Y FUNCIONES ALMACENADAS---------------------------------------------------------
 */
 
 
@@ -297,7 +297,7 @@ END
 
 
 /*
-CREACIÓN DE TABLAS AUXILIARES DE AUDITORÍA Y CREACIÓN DE TRIGGERS
+--------------------------------------------------CREACIÓN DE TABLAS AUXILIARES DE AUDITORÍA Y CREACIÓN DE TRIGGERS---------------------------------------------------------
 */
 
 --Creación de la tabla auditoriaConsorcio
@@ -425,7 +425,7 @@ END
 GO
 
 /*
-INDICES COLUMNARES
+---------------------------------------------------------INDICES COLUMNARES---------------------------------------------------------
 */
 
 
@@ -532,4 +532,122 @@ END;
 -- Vuelve a habilitar las restricciones de clave externa
 ALTER TABLE dbo.gasto CHECK CONSTRAINT ALL;
 GO
+
+--------------------------------------------------------- Manejo de Permisos a nivel de usuario ---------------------------------------------------------
+
+/*
+-----------Triggers de Auditoría Relacionados con Permisos:
+
+Imagina que quieres auditar cambios en los permisos de usuario. Puedes crear un trigger que se active cada vez que se 
+concedan o se retiren permisos a un usuario
+*/
+
+--1.Crear una Auditoría de Base de Datos:
+
+--Supongamos que tienes una tabla llamada permisos_usuario con la siguiente estructura:
+CREATE TABLE permisos_usuario (
+    id_usuario INT,
+    permiso VARCHAR(50),
+    fecha_modificacion DATETIME
+);
+
+/*
+Ahora, crearemos un trigger que se active cada vez que se concedan o retiren permisos a 
+un usuario. El trigger registrará la acción realizada y la fecha de modificación en la tabla de auditoría auditoria_permisos:
+*/
+CREATE TABLE auditoria_permisos (
+    id_audit INT PRIMARY KEY IDENTITY,
+    id_usuario INT,
+    permiso_afectado VARCHAR(50),
+    accion_realizada VARCHAR(10),
+    fecha_modificacion DATETIME
+);
+--------------------------------------------------------------------------------------------------------------------------------
+	--LO QUE ESTA EN MEDIO ES EL TRABAJO DE OTRO GRUPO
+
+										--creamos un login  con una contraseña
+										create login logJulio	with password='1234';
+
+										--cambiamos a la base de datos en donde se va a implementar los permisos
+										use base_consorcio;
+
+										--ccreamos un usuario para la instancia de logJulio
+										create user uJulio for login logJulio;
+
+-- Crear el trigger
+CREATE TRIGGER tr_audit_permisos
+ON permisos_usuario
+AFTER INSERT, DELETE
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Si se inserta un nuevo permiso
+    IF EXISTS (SELECT * FROM inserted)
+    BEGIN
+									--Le otorgamos privilegios con el con Grant
+
+										grant select on  zona to uJulio
+
+										grant select on administrador to uJulio
+
+	    INSERT INTO auditoria_permisos (id_usuario, permiso_afectado, accion_realizada, fecha_modificacion)
+        SELECT id_usuario, permiso, 'CONCEDIDO', GETDATE()
+        FROM inserted;
+    END
+
+    -- Si se elimina un permiso
+    IF EXISTS (SELECT * FROM deleted)
+    BEGIN
+
+										--asimismo se le puede quitar privilegio con revoke
+
+									--con el siguiente codigo se le quita todos los privilegios para los comandos al usuarios
+									revoke all on zona from uJulio cascade
+									revoke all on administrador from uJulio cascade
+
+        INSERT INTO auditoria_permisos (id_usuario, permiso_afectado, accion_realizada, fecha_modificacion)
+        SELECT id_usuario, permiso, 'RETIRADO', GETDATE()
+        FROM deleted;
+    END
+END;
+-----------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------
+--ELIMINAR TRIGGER
+DROP TRIGGER tr_audit_permisos;
+---------------------------------------------------------
+-- Verificar permisos actuales
+SELECT
+    class_desc,
+    permission_name,
+    state_desc,
+    OBJECT_NAME(major_id) AS object_name
+FROM
+    sys.database_permissions
+WHERE
+    grantee_principal_id = USER_ID('uJulio');
+
+---------------------------------------------------------
+--Realizamos algunas acciones en la tabla permisos_usuario para probar el trigger:
+
+-- Concesión de permisos
+INSERT INTO permisos_usuario (id_usuario, permiso, fecha_modificacion)
+VALUES (1, 'LECTURA', GETDATE());
+
+-- Retiro de permisos
+DELETE FROM permisos_usuario WHERE id_usuario = 1 AND permiso = 'LECTURA';
+
+-- Consulta de la tabla de auditoría
+SELECT * FROM permisos_usuario;
+SELECT * FROM auditoria_permisos;
+
+/*
+Estas consultas simulan la concesión y el retiro de permisos. Después de ejecutar estas consultas, 
+puedes consultar la tabla auditoria_permisos para verificar si los registros de auditoría se han creado correctamente.
+*/
+
+--------------------------------------------------------------------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------------------------------
+
 
