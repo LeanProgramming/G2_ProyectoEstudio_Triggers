@@ -519,7 +519,7 @@ BEGIN
         -- Valores aleatorios para cada columna
         CAST((RAND() * (5-1) + 1) AS INT), -- idprovincia (aleatorio entre 1 y 5)
         CAST((RAND() * (5-1) + 1) AS INT), -- idlocalidad (aleatorio entre 1 y 5)
-        CAST((RAND() * (40-1) + 1) AS INT), -- idconsorcio (aleatorio entre 1 y 400)
+        CAST((RAND() * (40-1) + 1) AS INT), -- idconsorcio (aleatorio entre 1 y 40)
         CAST((RAND() * (9-1) + 1) AS INT), -- periodo (aleatorio entre 1 y 9)
         GETDATE(), -- fechapago (fecha y hora actual)
         CAST((RAND() * (5-1) + 1) AS INT), -- idtipogasto (aleatorio entre 1 y 5)
