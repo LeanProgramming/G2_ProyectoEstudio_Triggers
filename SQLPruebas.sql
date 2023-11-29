@@ -552,7 +552,7 @@ ORDER BY b.backup_start_date DESC;
 
 RESTORE Database base_consorcio
 FROM DISK = @Ubicacion
-WITH RECOVERY;
+WITH REPLACE;
 
 --use base_consorcio
 
@@ -574,24 +574,24 @@ FROM msdb.dbo.backupset AS b
 JOIN msdb.dbo.backupmediafamily AS m ON b.media_set_id = m.media_set_id
 WHERE b.database_name = @NombreDataBase
   AND RIGHT(m.physical_device_name, 4) = '.trn' -- Filtrar por la extensión ".trn"
-  AND m.physical_device_name LIKE '%LogBackupConsorcio Oct 31 2023  9.38PM%' -- Filtrar por el nombre del archivo
+  AND m.physical_device_name LIKE '%LogBackupConsorcio Nov 29 2023  5.12PM%' -- Filtrar por el nombre del archivo
 ORDER BY b.backup_start_date DESC;
 
 RESTORE Database base_consorcio
 FROM DISK = @Ubicacion
-WITH RECOVERY;
+WITH REPLACE;
 
 SELECT @Ubicacion = m.physical_device_name
 FROM msdb.dbo.backupset AS b
 JOIN msdb.dbo.backupmediafamily AS m ON b.media_set_id = m.media_set_id
 WHERE b.database_name = @NombreDataBase
   AND RIGHT(m.physical_device_name, 4) = '.trn' -- Filtrar por la extensión ".trn"
-  AND m.physical_device_name LIKE '%LogBackupConsorcio Oct 31 2023  9.39PM%' -- Filtrar por el nombre del archivo
+  AND m.physical_device_name LIKE '%LogBackupConsorcio Nov 29 2023  5.19PM%' -- Filtrar por el nombre del archivo
 ORDER BY b.backup_start_date DESC;
 
 RESTORE Database base_consorcio
 FROM DISK = @Ubicacion
-WITH RECOVERY;
+WITH REPLACE;
 
 --use base_consorcio
 

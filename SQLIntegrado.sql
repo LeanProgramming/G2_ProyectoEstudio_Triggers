@@ -534,120 +534,86 @@ ALTER TABLE dbo.gasto CHECK CONSTRAINT ALL;
 GO
 
 --------------------------------------------------------- Manejo de Permisos a nivel de usuario ---------------------------------------------------------
+--------------------------USUARIO logLucas--------------------------
+--creacion de login con su contraseña
+create login logLucas with password='54321'
+--creacion de usuario
+create user loglucas	for login logLucas
 
-/*
------------Triggers de Auditoría Relacionados con Permisos:
 
-Imagina que quieres auditar cambios en los permisos de usuario. Puedes crear un trigger que se active cada vez que se 
-concedan o se retiren permisos a un usuario
-*/
+--se concede privilegio de todos los comandos solo para dos tablas
+grant all on conserje to loglucas
 
---1.Crear una Auditoría de Base de Datos:
+grant all on administrador to loglucas
 
---Supongamos que tienes una tabla llamada permisos_usuario con la siguiente estructura:
-CREATE TABLE permisos_usuario (
-    id_usuario INT,
-    permiso VARCHAR(50),
-    fecha_modificacion DATETIME
-);
+--------------------------USUARIO logJulio--------------------------
+--creamos un login  con una contraseña
+create login logJulio	with password='1234'
 
-/*
-Ahora, crearemos un trigger que se active cada vez que se concedan o retiren permisos a 
-un usuario. El trigger registrará la acción realizada y la fecha de modificación en la tabla de auditoría auditoria_permisos:
-*/
-CREATE TABLE auditoria_permisos (
-    id_audit INT PRIMARY KEY IDENTITY,
-    id_usuario INT,
-    permiso_afectado VARCHAR(50),
-    accion_realizada VARCHAR(10),
-    fecha_modificacion DATETIME
-);
---------------------------------------------------------------------------------------------------------------------------------
-	--LO QUE ESTA EN MEDIO ES EL TRABAJO DE OTRO GRUPO
+--cambiamos a la base de datos en donde se va a implementar los permisos
+use base_consorcio
 
-										--creamos un login  con una contraseña
-										create login logJulio	with password='1234';
+--creamos un usuario para la instancia de logJulio
+create user uJulio for login logJulio
 
-										--cambiamos a la base de datos en donde se va a implementar los permisos
-										use base_consorcio;
+--Le otorgamos privilegios con el con Grant
 
-										--ccreamos un usuario para la instancia de logJulio
-										create user uJulio for login logJulio;
+grant select on  zona to uJulio
 
--- Crear el trigger
-CREATE TRIGGER tr_audit_permisos
-ON permisos_usuario
-AFTER INSERT, DELETE
-AS
-BEGIN
-    SET NOCOUNT ON;
+grant select on administrador to uJulio
 
-    -- Si se inserta un nuevo permiso
-    IF EXISTS (SELECT * FROM inserted)
-    BEGIN
-									--Le otorgamos privilegios con el con Grant
+--asimismo se le puede quitar privilegio con revoke
 
-										grant select on  zona to uJulio
+--con el siguiente codigo se le quita todos los privilegios para los comandos al usuarios
 
-										grant select on administrador to uJulio
+revoke all on zona from uJulio cascade
 
-	    INSERT INTO auditoria_permisos (id_usuario, permiso_afectado, accion_realizada, fecha_modificacion)
-        SELECT id_usuario, permiso, 'CONCEDIDO', GETDATE()
-        FROM inserted;
-    END
+select count(*) from zona
 
-    -- Si se elimina un permiso
-    IF EXISTS (SELECT * FROM deleted)
-    BEGIN
 
-										--asimismo se le puede quitar privilegio con revoke
+----------------------------MANEJO DE ROLES-----------------------------------------------------
+create login logDBA with password='12345'
+use base_consorcio
+create login logRO with password='54321'
+use base_consorcio
 
-									--con el siguiente codigo se le quita todos los privilegios para los comandos al usuarios
-									revoke all on zona from uJulio cascade
-									revoke all on administrador from uJulio cascade
+create user usuarioDBA for login logDBA;	-- creacion de usuario que tendra rol de DBa
 
-        INSERT INTO auditoria_permisos (id_usuario, permiso_afectado, accion_realizada, fecha_modificacion)
-        SELECT id_usuario, permiso, 'RETIRADO', GETDATE()
-        FROM deleted;
-    END
-END;
------------------------------------------------------------------------------------
------------------------------------------------------------------------------------
---ELIMINAR TRIGGER
-DROP TRIGGER tr_audit_permisos;
----------------------------------------------------------
--- Verificar permisos actuales
-SELECT
-    class_desc,
-    permission_name,
-    state_desc,
-    OBJECT_NAME(major_id) AS object_name
-FROM
-    sys.database_permissions
-WHERE
-    grantee_principal_id = USER_ID('uJulio');
+create user usuarioReadOnly for login logRO;-- creacion de usuario que tendra solo rol de solo lectura
 
----------------------------------------------------------
---Realizamos algunas acciones en la tabla permisos_usuario para probar el trigger:
 
--- Concesión de permisos
-INSERT INTO permisos_usuario (id_usuario, permiso, fecha_modificacion)
-VALUES (1, 'LECTURA', GETDATE());
 
--- Retiro de permisos
-DELETE FROM permisos_usuario WHERE id_usuario = 1 AND permiso = 'LECTURA';
+create role DBA_Role -- creacion de rol de DBA
 
--- Consulta de la tabla de auditoría
-SELECT * FROM permisos_usuario;
-SELECT * FROM auditoria_permisos;
+-- Permiso de administración de base de datos
+grant control to DBA_Role
 
-/*
-Estas consultas simulan la concesión y el retiro de permisos. Después de ejecutar estas consultas, 
-puedes consultar la tabla auditoria_permisos para verificar si los registros de auditoría se han creado correctamente.
-*/
+-- Permiso para crear, modificar y eliminar tablas
+GRANT CREATE TABLE TO DBA_Role;
+GRANT ALTER TO DBA_Role;
+GRANT DELETE TO DBA_Role;
 
---------------------------------------------------------------------------------------------------------------------------------------------
+-- Permiso para gestionar roles de base de datos
+GRANT ALTER ANY ROLE TO DBA_Role;
+GRANT ALTER ANY USER TO DBA_Role;
 
+-- Asignar el rol de DBA a el usuario creado al efecto
+EXEC sp_addrolemember 'DBA_Role', 'usuarioDBA';
+
+------CREACION DE ROL DE SOLO LECTURA(ONLYREAD)-------------	
+CREATE ROLE ReadOnly_Role;
+-- Otorgar permiso SELECT  para consorcio
+GRANT SELECT TO ReadOnly_Role;
+GRANT SELECT  TO ReadOnly_Role;
+
+-- Otorgar permiso VIEW DEFINITION para ver la definición de objetos
+GRANT VIEW DEFINITION TO ReadOnly_Role;
+
+-- Asignar el rol al usuario
+EXEC sp_addrolemember 'ReadOnly_Role', 'usuarioReadOnly';
+
+--se le otorga al readOnly permiso usar  el procedimiento almacenado
+GRANT EXECUTE ON dbo.SP_insercion_admin TO usuarioReadOnly;
 -------------------------------------------------------------------------------------------------------
 
 
